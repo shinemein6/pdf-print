@@ -3,77 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF N-up Master Pro (Full Preview)</title>
+    <title>PDF N-up Master - Final Fix</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .app-container { max-width: 1200px; width: 100%; display: grid; grid-template-columns: 380px 1fr; gap: 30px; }
-        .control-panel { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content; }
-        .preview-panel { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; min-height: 600px; }
+        :root { --primary: #2563eb; --bg: #f1f5f9; --card: #ffffff; }
+        body { font-family: sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .app-container { max-width: 1200px; width: 100%; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .control-panel { background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: fit-content; }
+        .preview-panel { background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; min-height: 700px; }
         
-        h1 { font-size: 20px; margin: 0 0 25px 0; color: #1e293b; display: flex; align-items: center; gap: 10px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 8px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; }
-        input:focus { border-color: var(--primary); }
+        h1 { font-size: 18px; margin: 0 0 20px 0; color: #1e293b; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
         
-        .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; font-size: 16px; transition: opacity 0.2s; }
-        .btn-main:hover { opacity: 0.9; }
-        .btn-main:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; width: 100%; font-weight: 700; cursor: pointer; font-size: 15px; margin-top: 10px; }
+        .btn-main:disabled { background: #94a3b8; }
 
-        #previewCanvas { background: white; border: 1px solid #e2e8f0; max-width: 100%; height: auto; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
-        .preview-info { margin-top: 15px; color: #64748b; font-size: 13px; text-align: center; font-weight: 500; }
-        .loading-overlay { margin-top: 10px; color: var(--primary); font-size: 12px; display: none; }
+        #previewCanvas { background: white; border: 1px dotted #94a3b8; max-width: 100%; height: auto; }
+        .status-msg { margin-top: 10px; font-size: 12px; color: var(--primary); font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="control-panel">
-        <h1>📑 PDF N-up 설정</h1>
+        <h1>📑 PDF 모아찍기 설정</h1>
         
         <div class="form-group">
-            <label>PDF 파일 업로드</label>
+            <label>1. PDF 파일 선택</label>
             <input type="file" id="pdfInput" accept="application/pdf">
         </div>
 
         <div class="form-group">
-            <label>출력 용지 규격</label>
-            <select id="pageSize" onchange="handleSettingChange()">
-                <option value="B4" selected>B4 (JIS - 257x364mm)</option>
-                <option value="A4">A4 (ISO - 210x297mm)</option>
+            <label>2. 용지 선택</label>
+            <select id="pageSize" onchange="resetAndPreview()">
+                <option value="B4" selected>B4 (257x364mm)</option>
+                <option value="A4">A4 (210x297mm)</option>
             </select>
         </div>
 
         <div style="display: flex; gap: 10px;">
             <div class="form-group" style="flex: 1;">
-                <label>가로 개수 (a)</label>
-                <input type="number" id="cols" value="3" min="1" oninput="handleSettingChange()">
+                <label>3. 가로(a)</label>
+                <input type="number" id="cols" value="3" min="1" oninput="resetAndPreview()">
             </div>
             <div class="form-group" style="flex: 1;">
-                <label>세로 개수 (b)</label>
-                <input type="number" id="rows" value="6" min="1" oninput="handleSettingChange()">
+                <label>4. 세로(b)</label>
+                <input type="number" id="rows" value="6" min="1" oninput="resetAndPreview()">
             </div>
         </div>
 
         <div class="form-group">
-            <label>배치 순서</label>
-            <select id="direction" onchange="handleSettingChange()">
-                <option value="horizontal">가로 우선 (→ 방향)</option>
-                <option value="vertical">세로 우선 (↓ 방향)</option>
+            <label>5. 배치 순서</label>
+            <select id="direction" onchange="resetAndPreview()">
+                <option value="horizontal">가로 방향 (→)</option>
+                <option value="vertical">세로 방향 (↓)</option>
             </select>
         </div>
 
-        <button class="btn-main" id="generateBtn" onclick="generatePdf()">변환 및 다운로드</button>
+        <button class="btn-main" id="generateBtn" onclick="generatePdf()">PDF 다운로드</button>
+        <div id="statusMsg" class="status-msg"></div>
     </div>
 
     <div class="preview-panel">
-        <label style="align-self: flex-start; margin-bottom: 15px;">출력 레이아웃 미리보기 (첫 페이지 묶음)</label>
+        <label style="align-self: flex-start;">실시간 미리보기 (첫 장 배치도)</label>
         <canvas id="previewCanvas"></canvas>
-        <div id="loadingText" class="loading-overlay">페이지 렌더링 중...</div>
-        <div class="preview-info" id="previewInfo">파일을 업로드하면 실제 배치가 표시됩니다.</div>
     </div>
 </div>
 
@@ -86,80 +82,70 @@
         'B4': { pt: [728.50, 1031.81] }
     };
 
-    let uploadedPdfData = null;
-    let pageThumbnails = []; // 렌더링된 페이지 이미지 보관소
-    let isRendering = false;
+    let masterBuffer = null; // 원본 데이터를 담는 변수
+    let pageThumbnails = []; // 미리보기 이미지들
+    let isProcessing = false;
 
-    // 설정 변경 시 호출
-    async function handleSettingChange() {
-        if (!uploadedPdfData) {
-            updatePreview();
+    // 설정 변경 시 호출: 기존 미리보기를 싹 비우고 다시 그림
+    async function resetAndPreview() {
+        if (!masterBuffer) {
+            updateCanvas();
             return;
         }
-        await refreshThumbnails();
-        updatePreview();
+        pageThumbnails = []; // 이미지 보관함 비우기
+        await loadThumbnails();
+        updateCanvas();
     }
 
-    // 파일 업로드 처리
+    // 파일 선택 시 호출
     document.getElementById('pdfInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            uploadedPdfData = arrayBuffer;
-            pageThumbnails = []; // 새 파일이므로 초기화
-            
-            await refreshThumbnails();
-            updatePreview();
-        } catch (err) {
-            alert("파일을 읽는 중 오류가 발생했습니다: " + err.message);
-        }
+        const arrayBuffer = await file.arrayBuffer();
+        masterBuffer = arrayBuffer; // 원본 저장
+        resetAndPreview();
     });
 
-    // 필요한 만큼의 페이지를 미리보기용으로 렌더링
-    async function refreshThumbnails() {
-        if (!uploadedPdfData || isRendering) return;
-        
+    // 필요한 페이지만큼 이미지로 변환 (미리보기용)
+    async function loadThumbnails() {
+        if (!masterBuffer || isProcessing) return;
+        isProcessing = true;
+        document.getElementById('statusMsg').innerText = "미리보기 생성 중...";
+
         const cols = parseInt(document.getElementById('cols').value) || 1;
         const rows = parseInt(document.getElementById('rows').value) || 1;
-        const neededCount = cols * rows;
-
-        // 이미 렌더링된 페이지가 충분하면 통과
-        if (pageThumbnails.length >= neededCount) return;
-
-        isRendering = true;
-        document.getElementById('loadingText').style.display = 'block';
+        const needed = cols * rows;
 
         try {
-            const loadingTask = pdfjsLib.getDocument({ data: uploadedPdfData.slice(0) });
+            // [핵심] .slice(0)를 사용하여 원본 masterBuffer를 보호함
+            const loadingTask = pdfjsLib.getDocument({ data: masterBuffer.slice(0) });
             const pdf = await loadingTask.promise;
-            const totalPages = pdf.numPages;
-            const targetCount = Math.min(neededCount, totalPages);
+            const total = pdf.numPages;
+            const limit = Math.min(needed, total);
 
-            // 부족한 페이지 보충 렌더링
-            for (let i = pageThumbnails.length; i < targetCount; i++) {
+            for (let i = 0; i < limit; i++) {
                 const page = await pdf.getPage(i + 1);
-                const viewport = page.getViewport({ scale: 0.3 }); // 미리보기용 저해상도
+                const viewport = page.getViewport({ scale: 0.3 });
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
                 await page.render({ canvasContext: ctx, viewport }).promise;
-                pageThumbnails.push(canvas);
                 
-                // 한 페이지씩 그려질 때마다 미리보기 갱신 (진행 상황 표시)
-                updatePreview();
+                pageThumbnails.push(canvas);
+                updateCanvas(); // 한 장씩 나올 때마다 바로 화면 갱신
             }
         } catch (err) {
             console.error(err);
         } finally {
-            isRendering = false;
-            document.getElementById('loadingText').style.display = 'none';
+            isProcessing = false;
+            document.getElementById('statusMsg').innerText = "";
         }
     }
 
-    function updatePreview() {
+    // 미리보기 화면 실제 그리기
+    function updateCanvas() {
         const canvas = document.getElementById('previewCanvas');
         const ctx = canvas.getContext('2d');
         const cols = parseInt(document.getElementById('cols').value) || 1;
@@ -168,22 +154,19 @@
         const direction = document.getElementById('direction').value;
         
         const [pW, pH] = SIZES[sizeKey].pt;
-        const displayScale = 0.5; 
-        canvas.width = pW * displayScale;
-        canvas.height = pH * displayScale;
+        const scale = 0.5; // 화면 표시 비율
+        canvas.width = pW * scale;
+        canvas.height = pH * scale;
 
-        // 배경(종이) 그리기
-        ctx.fillStyle = "#fff";
+        // 배경색
+        ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const cellW = canvas.width / cols;
         const cellH = canvas.height / rows;
-        ctx.strokeStyle = "#cbd5e1";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#e2e8f0";
 
-        const itemsPerPage = cols * rows;
-
-        for (let i = 0; i < itemsPerPage; i++) {
+        for (let i = 0; i < (cols * rows); i++) {
             let r, c;
             if (direction === 'horizontal') {
                 r = Math.floor(i / cols);
@@ -195,48 +178,38 @@
             const x = c * cellW;
             const y = r * cellH;
 
-            // 격자 테두리
+            // 격자 선
             ctx.strokeRect(x, y, cellW, cellH);
 
-            // 해당 칸에 넣을 렌더링된 페이지가 있는지 확인
+            // 이미지 있으면 넣기
             if (pageThumbnails[i]) {
-                const thumb = pageThumbnails[i];
-                const tw = thumb.width;
-                const th = thumb.height;
-                const s = Math.min(cellW / tw, cellH / th) * 0.92; // 칸의 92% 크기로 배치
-                const dw = tw * s;
-                const dh = th * s;
-                const dx = x + (cellW - dw) / 2;
-                const dy = y + (cellH - dh) / 2;
-                
-                // 그림자 효과 (실제 페이지 느낌)
-                ctx.shadowColor = "rgba(0,0,0,0.1)";
-                ctx.shadowBlur = 4;
-                ctx.drawImage(thumb, dx, dy, dw, dh);
-                ctx.shadowBlur = 0; // 그림자 초기화
+                const img = pageThumbnails[i];
+                const ratio = Math.min(cellW / img.width, cellH / img.height) * 0.9;
+                const dw = img.width * ratio;
+                const dh = img.height * ratio;
+                ctx.drawImage(img, x + (cellW - dw)/2, y + (cellH - dh)/2, dw, dh);
             } else {
-                // 페이지가 없는 빈 칸 번호 표시
-                ctx.fillStyle = "#f1f5f9";
-                ctx.font = "bold 12px sans-serif";
+                ctx.fillStyle = "#cbd5e1";
+                ctx.font = "10px sans-serif";
                 ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
                 ctx.fillText(i + 1, x + cellW/2, y + cellH/2);
             }
         }
-        document.getElementById('previewInfo').innerText = `${sizeKey} 용지 | ${cols}x${rows} 배치 | ${direction === 'horizontal' ? '가로' : '세로'} 순서`;
     }
 
+    // 실제 PDF 변환 및 다운로드
     async function generatePdf() {
-        if (!uploadedPdfData) return alert("파일을 먼저 업로드해주세요.");
+        if (!masterBuffer) return alert("파일을 선택해주세요.");
         
         const btn = document.getElementById('generateBtn');
         btn.disabled = true;
-        btn.innerText = "PDF 생성 중...";
+        btn.innerText = "처리 중...";
 
         try {
             const outDoc = await PDFLib.PDFDocument.create();
-            const srcDoc = await PDFLib.PDFDocument.load(uploadedPdfData);
-            const embeddedPages = await outDoc.embedPages(srcDoc.getPages());
+            // [핵심] 여기서도 .slice(0)를 사용하여 원본을 절대 건드리지 않음
+            const srcDoc = await PDFLib.PDFDocument.load(masterBuffer.slice(0));
+            const pages = await outDoc.embedPages(srcDoc.getPages());
             
             const cols = parseInt(document.getElementById('cols').value);
             const rows = parseInt(document.getElementById('rows').value);
@@ -246,48 +219,48 @@
 
             const cellW = pW / cols;
             const cellH = pH / rows;
-            const itemsPerPage = cols * rows;
+            const perSheet = cols * rows;
 
-            let currentPage;
-            for (let i = 0; i < embeddedPages.length; i++) {
-                if (i % itemsPerPage === 0) currentPage = outDoc.addPage([pW, pH]);
+            let sheet;
+            for (let i = 0; i < pages.length; i++) {
+                if (i % perSheet === 0) sheet = outDoc.addPage([pW, pH]);
 
-                const localIdx = i % itemsPerPage;
+                const idx = i % perSheet;
                 let r, c;
                 if (direction === 'horizontal') {
-                    r = Math.floor(localIdx / cols);
-                    c = localIdx % cols;
+                    r = Math.floor(idx / cols);
+                    c = idx % cols;
                 } else {
-                    c = Math.floor(localIdx / rows);
-                    r = localIdx % rows;
+                    c = Math.floor(idx / rows);
+                    r = idx % rows;
                 }
 
-                const page = embeddedPages[i];
-                const { width: ow, height: oh } = page;
-                const scale = Math.min(cellW / ow, cellH / oh) * 0.98;
-
-                const dw = ow * scale;
-                const dh = oh * scale;
-                const dx = (c * cellW) + (cellW - dw) / 2;
-                const dy = pH - ((r + 1) * cellH) + (cellH - dh) / 2;
-
-                currentPage.drawPage(page, { x: dx, y: dy, width: dw, height: dh });
+                const p = pages[i];
+                const s = Math.min(cellW / p.width, cellH / p.height) * 0.98;
+                const dw = p.width * s;
+                const dh = p.height * s;
+                
+                sheet.drawPage(p, {
+                    x: (c * cellW) + (cellW - dw) / 2,
+                    y: pH - ((r + 1) * cellH) + (cellH - dh) / 2,
+                    width: dw,
+                    height: dh
+                });
             }
 
             const bytes = await outDoc.save();
-            const blob = new Blob([bytes], { type: "application/pdf" });
             const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `converted_${sizeKey}_${cols}x${rows}.pdf`;
+            link.href = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+            link.download = "result.pdf";
             link.click();
-        } catch (e) {
-            alert("오류 발생: " + e.message);
+        } catch (err) {
+            alert("다운로드 오류: " + err.message);
         } finally {
             btn.disabled = false;
-            btn.innerText = "변환 및 다운로드";
+            btn.innerText = "PDF 다운로드";
         }
     }
-    updatePreview();
+    updateCanvas();
 </script>
 </body>
 </html>
